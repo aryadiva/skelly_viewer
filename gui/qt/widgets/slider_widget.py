@@ -1,5 +1,5 @@
 from PySide6.QtCore import Qt, QTimer, Slot
-from PySide6.QtWidgets import QSlider, QWidget, QLabel, QHBoxLayout, QPushButton, QVBoxLayout, QLineEdit
+from PySide6.QtWidgets import QSlider, QWidget, QLabel, QHBoxLayout, QPushButton, QVBoxLayout, QLineEdit, QCheckBox, QButtonGroup
 
 
 from skelly_viewer.utilities.freemocap_data_loader import FreeMoCapDataLoader
@@ -78,6 +78,11 @@ class PlayPauseCountSlider(QWidget):
         # label_test2.setWordWrap(True)
         # layout.addWidget(label_test2)
         #---------------------------------
+        
+        layout_h = QHBoxLayout()
+        self._layout.addLayout(layout_h)
+        layout_h.setAlignment(Qt.AlignmentFlag.AlignTop)
+
         # Set the layout
         layout2 = QVBoxLayout()
         self._layout.addLayout(layout2)
@@ -99,7 +104,7 @@ class PlayPauseCountSlider(QWidget):
         self.button2 = QSliderButton('Submit')
         self.button2.clicked.connect(self.on_click)
         layout2.addWidget(self.button2)
-        
+
         # Set the layout to the QWidget
         self.setLayout(layout2)
         #----------------------------------
@@ -110,9 +115,7 @@ class PlayPauseCountSlider(QWidget):
 
         # addition starts
         if self.textbox is not None:
-            if not os.path.exists(str(self.load_angles_path())):
-                pass
-            else:
+            if os.path.exists(str(self.load_angles_path())):
                 # Load the saved text box value
                 #self.load_textbox_value()
 
@@ -177,6 +180,72 @@ class PlayPauseCountSlider(QWidget):
                 self._slider.valueChanged.connect(lambda:self._frame_count_label10.setText(f"\nLower Right Leg: {self.arr10[self._slider.value()]}"))
                 self._frame_count_label10 = QLabel(f"Lower Right Leg: {self._slider.value()}")
                 new_hbox1.addWidget(self._frame_count_label10)
+                #--------------------Condition-----------------------------
+                vbox_weight = QVBoxLayout()
+                self.label_weight = QLabel("Weight (kg):", self)
+                vbox_weight.addWidget(self.label_weight)
+                self.checkbox_group_weight = QButtonGroup(self)
+                # Create a QCheckBox widget
+                self.checkbox = QCheckBox('< 5kg')
+                self.checkbox_group_weight.addButton(self.checkbox)
+                self.checkbox_group_weight.setId(self.checkbox, 1)
+                self.checkbox.stateChanged.connect(self.get_selected_values)
+                vbox_weight.addWidget(self.checkbox)
+
+                self.checkbox2 = QCheckBox('5 - 10kg')
+                self.checkbox_group_weight.addButton(self.checkbox2)
+                self.checkbox_group_weight.setId(self.checkbox2, 2)
+                self.checkbox2.stateChanged.connect(self.get_selected_values)
+                vbox_weight.addWidget(self.checkbox2)
+
+                self.checkbox3 = QCheckBox('> 10kg')
+                self.checkbox_group_weight.addButton(self.checkbox3)
+                self.checkbox_group_weight.setId(self.checkbox3, 3)
+                self.checkbox3.stateChanged.connect(self.get_selected_values)
+                vbox_weight.addWidget(self.checkbox3)
+
+                vbox_neck = QVBoxLayout()
+                self.label_neck = QLabel("Neck condition:", self)
+                vbox_neck.addWidget(self.label_neck)
+                # Create a QCheckBox widget
+                self.checkbox4 = QCheckBox('Twisted', self)
+                self.checkbox4.stateChanged.connect(self.get_checkbox_value)
+                vbox_neck.addWidget(self.checkbox4)
+                self.checkbox5 = QCheckBox('Side Bending', self)
+                self.checkbox5.stateChanged.connect(self.get_checkbox_value)
+                vbox_neck.addWidget(self.checkbox5)
+
+                vbox_trunk = QVBoxLayout()
+                self.label_trunk = QLabel("Trunk condition:", self)
+                vbox_trunk.addWidget(self.label_trunk)
+                # Create a QCheckBox widget
+                self.checkbox6 = QCheckBox('Twisted')
+                self.checkbox6.stateChanged.connect(self.get_checkbox_value)
+                vbox_trunk.addWidget(self.checkbox6)
+                self.checkbox7 = QCheckBox('Side Bending')
+                self.checkbox7.stateChanged.connect(self.get_checkbox_value)
+                vbox_trunk.addWidget(self.checkbox7)
+
+                vbox_u_arm = QVBoxLayout()
+                self.label_u_arm = QLabel("Upper Arm condition:", self)
+                vbox_u_arm.addWidget(self.label_u_arm)
+                # Create a QCheckBox widget
+                self.checkbox8 = QCheckBox('Shoulder is raised')
+                self.checkbox8.stateChanged.connect(self.get_checkbox_value)
+                vbox_u_arm.addWidget(self.checkbox8)
+                self.checkbox9 = QCheckBox('Upper arm is abducted')
+                self.checkbox9.stateChanged.connect(self.get_checkbox_value)
+                vbox_u_arm.addWidget(self.checkbox9)
+                self.checkbox10 = QCheckBox('Arm is supported/leaning')
+                self.checkbox10.stateChanged.connect(self.get_checkbox_value)
+                vbox_u_arm.addWidget(self.checkbox10)
+
+                layout_h.addLayout(vbox_weight)
+                layout_h.addLayout(vbox_neck)
+                layout_h.addLayout(vbox_trunk)
+                layout_h.addLayout(vbox_u_arm)
+            else:
+                pass
         # end
         
 
@@ -221,6 +290,18 @@ class PlayPauseCountSlider(QWidget):
         self._slider.setValue(0)
 
     #-------------------------------------------------
+    def get_selected_values(self):
+        # Iterate through the checkboxes and print the IDs of checked ones
+        for button in self.checkbox_group_weight.buttons():
+            if button.isChecked():
+                button_id = self.checkbox_group_weight.id(button)
+                print(f"Checkbox ID: {button_id}")
+
+    def get_checkbox_value(self):
+        checkbox4_state = self.checkbox4.isChecked()
+        checkbox5_state = self.checkbox5.isChecked()
+        print(self.checkbox4.isChecked())
+    
     def on_click(self):
         # Get the text from the textbox
         file_path = self.textbox.text()
@@ -242,6 +323,9 @@ class PlayPauseCountSlider(QWidget):
         
         # Print the result to the console (optional)
         print(message)
+
+        # Print the checkbox state
+        # print(f"Checkbox is {'checked' if self.checkbox.checkState() == Qt.CheckState.Checked else 'unchecked'}")
     
     def save_textbox_value(self, value):
         # Save the text box value to a configuration file
