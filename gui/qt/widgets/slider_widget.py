@@ -2,8 +2,12 @@ from PySide6.QtCore import Qt, QTimer, Slot
 from PySide6.QtWidgets import QSlider, QWidget, QLabel, QHBoxLayout, QPushButton, QVBoxLayout, QLineEdit, QCheckBox, QButtonGroup
 
 
-from skelly_viewer.utilities.freemocap_data_loader import FreeMoCapDataLoader
+#from skelly_viewer.utilities.freemocap_data_loader import FreeMoCapDataLoader
 from scripts.read_csv import read_from_csv
+#from scripts.calculate_angles import CalculateAngles
+from REBA.calculate_reba import DegreetoREBA
+
+import pandas as pd
 
 # from pathlib import Path
 # from freemocap.data_layer.recording_models.post_processing_parameter_models import ProcessingParameterModel
@@ -11,6 +15,9 @@ import os
 import configparser
 
 PRESUMED_FRAMES_PER_SECOND = 30
+
+def use_checkbox_value(is_checked):
+    print(f"Checkbox is {'checked' if is_checked else 'unchecked'}")
 
 
 class QSliderButton(QPushButton):
@@ -23,13 +30,17 @@ class PlayPauseCountSlider(QWidget):
     def __init__(self):
         super().__init__()
 
+        self.config_check_path = "C:\\Users\\Arya\\config_check.ini"
+        self.dataTF = self.read_config()
         # Define a global variable to hold the file path
         self.file_path = None
 
+        #self.reba_arr = []
+
         # addition start
-        documents_folder = os.path.expanduser("~\\Documents")
-        filename = "angles-csv_location.txt"
-        txt_path = os.path.join(documents_folder, filename)
+        # documents_folder = os.path.expanduser("~\\Documents")
+        # filename = "angles-csv_location.txt"
+        # txt_path = os.path.join(documents_folder, filename)
         # temp_path = os.path.join(documents_folder, 'temp.txt')
         
 
@@ -93,17 +104,26 @@ class PlayPauseCountSlider(QWidget):
         layout2.addWidget(self.textbox)
         
         # Create a QLabel to display the result
+        h_layout1 = QHBoxLayout()
+        h_layout1.setAlignment(Qt.AlignmentFlag.AlignLeft)
+        h_layout2 = QHBoxLayout()
+        h_layout2.setAlignment(Qt.AlignmentFlag.AlignLeft)
+        
         self.label = QLabel("Enter angles.csv file path and press Submit", self)
         self.label2 = QLabel("Usually located in 'C:\\Users\\%USER%\\freemocap_data\\recording_sessions\\%SESSION%\\output_data\\angles.csv'", self)
         #self.label2 = QLabel(str(self.load_angles_path()), self)
         self.label2.setStyleSheet("font-size: 13px")
-        layout2.addWidget(self.label)
-        layout2.addWidget(self.label2)
+        h_layout1.addWidget(self.label)
+        h_layout2.addWidget(self.label2)
         
         # Create a QSliderButton (custom QPushButton) for submission
+        # h_layout2 = QHBoxLayout()
         self.button2 = QSliderButton('Submit')
         self.button2.clicked.connect(self.on_click)
-        layout2.addWidget(self.button2)
+        h_layout2.addWidget(self.button2)
+
+        layout2.addLayout(h_layout1)
+        layout2.addLayout(h_layout2)
 
         # Set the layout to the QWidget
         self.setLayout(layout2)
@@ -116,8 +136,8 @@ class PlayPauseCountSlider(QWidget):
         # addition starts
         if self.textbox is not None:
             if os.path.exists(str(self.load_angles_path())):
-                # Load the saved text box value
-                #self.load_textbox_value()
+                # Load the checkboxes value
+                #self.load_checkbox_states()
 
                 # with open(self.load_textbox_value(), 'r') as file:
                 #     angles_csv = file.read()
@@ -133,6 +153,8 @@ class PlayPauseCountSlider(QWidget):
                 self.arr8 = read_from_csv(angles_csv, 7)
                 self.arr9 = read_from_csv(angles_csv, 8)
                 self.arr10 = read_from_csv(angles_csv,9)
+                self.arr11 = read_from_csv(angles_csv, 10)
+                self.arr12 = read_from_csv(angles_csv,11)
 
                 # angles display addition start
                 new_hbox = QHBoxLayout()
@@ -158,6 +180,10 @@ class PlayPauseCountSlider(QWidget):
                 self._frame_count_label6 = QLabel(f"Upper Right Leg: {self._slider.value()}")
                 new_hbox.addWidget(self._frame_count_label6)
 
+                self._slider.valueChanged.connect(lambda:self._frame_count_label11.setText(f"\nLeft Wrist: {self.arr11[self._slider.value()]}"))
+                self._frame_count_label11 = QLabel(f"Left Wrist: {self._slider.value()}")
+                new_hbox.addWidget(self._frame_count_label11)
+
                 new_hbox1 = QHBoxLayout()
                 self._layout.addLayout(new_hbox1)
 
@@ -180,72 +206,112 @@ class PlayPauseCountSlider(QWidget):
                 self._slider.valueChanged.connect(lambda:self._frame_count_label10.setText(f"\nLower Right Leg: {self.arr10[self._slider.value()]}"))
                 self._frame_count_label10 = QLabel(f"Lower Right Leg: {self._slider.value()}")
                 new_hbox1.addWidget(self._frame_count_label10)
-                #--------------------Condition-----------------------------
-                vbox_weight = QVBoxLayout()
-                self.label_weight = QLabel("Weight (kg):", self)
-                vbox_weight.addWidget(self.label_weight)
-                self.checkbox_group_weight = QButtonGroup(self)
-                # Create a QCheckBox widget
-                self.checkbox = QCheckBox('< 5kg')
-                self.checkbox_group_weight.addButton(self.checkbox)
-                self.checkbox_group_weight.setId(self.checkbox, 1)
-                self.checkbox.stateChanged.connect(self.get_selected_values)
-                vbox_weight.addWidget(self.checkbox)
 
-                self.checkbox2 = QCheckBox('5 - 10kg')
-                self.checkbox_group_weight.addButton(self.checkbox2)
-                self.checkbox_group_weight.setId(self.checkbox2, 2)
-                self.checkbox2.stateChanged.connect(self.get_selected_values)
-                vbox_weight.addWidget(self.checkbox2)
-
-                self.checkbox3 = QCheckBox('> 10kg')
-                self.checkbox_group_weight.addButton(self.checkbox3)
-                self.checkbox_group_weight.setId(self.checkbox3, 3)
-                self.checkbox3.stateChanged.connect(self.get_selected_values)
-                vbox_weight.addWidget(self.checkbox3)
-
-                vbox_neck = QVBoxLayout()
-                self.label_neck = QLabel("Neck condition:", self)
-                vbox_neck.addWidget(self.label_neck)
-                # Create a QCheckBox widget
-                self.checkbox4 = QCheckBox('Twisted', self)
-                self.checkbox4.stateChanged.connect(self.get_checkbox_value)
-                vbox_neck.addWidget(self.checkbox4)
-                self.checkbox5 = QCheckBox('Side Bending', self)
-                self.checkbox5.stateChanged.connect(self.get_checkbox_value)
-                vbox_neck.addWidget(self.checkbox5)
-
-                vbox_trunk = QVBoxLayout()
-                self.label_trunk = QLabel("Trunk condition:", self)
-                vbox_trunk.addWidget(self.label_trunk)
-                # Create a QCheckBox widget
-                self.checkbox6 = QCheckBox('Twisted')
-                self.checkbox6.stateChanged.connect(self.get_checkbox_value)
-                vbox_trunk.addWidget(self.checkbox6)
-                self.checkbox7 = QCheckBox('Side Bending')
-                self.checkbox7.stateChanged.connect(self.get_checkbox_value)
-                vbox_trunk.addWidget(self.checkbox7)
-
-                vbox_u_arm = QVBoxLayout()
-                self.label_u_arm = QLabel("Upper Arm condition:", self)
-                vbox_u_arm.addWidget(self.label_u_arm)
-                # Create a QCheckBox widget
-                self.checkbox8 = QCheckBox('Shoulder is raised')
-                self.checkbox8.stateChanged.connect(self.get_checkbox_value)
-                vbox_u_arm.addWidget(self.checkbox8)
-                self.checkbox9 = QCheckBox('Upper arm is abducted')
-                self.checkbox9.stateChanged.connect(self.get_checkbox_value)
-                vbox_u_arm.addWidget(self.checkbox9)
-                self.checkbox10 = QCheckBox('Arm is supported/leaning')
-                self.checkbox10.stateChanged.connect(self.get_checkbox_value)
-                vbox_u_arm.addWidget(self.checkbox10)
-
-                layout_h.addLayout(vbox_weight)
-                layout_h.addLayout(vbox_neck)
-                layout_h.addLayout(vbox_trunk)
-                layout_h.addLayout(vbox_u_arm)
+                self._slider.valueChanged.connect(lambda:self._frame_count_label12.setText(f"\nLeft Wrist: {self.arr12[self._slider.value()]}"))
+                self._frame_count_label12 = QLabel(f"Left Wrist: {self._slider.value()}")
+                new_hbox1.addWidget(self._frame_count_label12)
             else:
                 pass
+        #--------------------Condition-----------------------------
+        vbox_weight = QVBoxLayout()
+        self.label_weight = QLabel("Weight (kg):", self)
+        vbox_weight.addWidget(self.label_weight)
+        self.checkbox_group_weight = QButtonGroup(self)
+        self.checkbox_group_weight.setExclusive(True)
+
+        # Create a QCheckBox widget
+        self.checkbox0 = QCheckBox('< 5kg', self)
+        self.checkbox_group_weight.addButton(self.checkbox0, 1)
+        self.checkbox0.stateChanged.connect(self.save_value)
+        #self.checkbox0.stateChanged.connect(self.checkbox0)
+        vbox_weight.addWidget(self.checkbox0)
+
+        self.checkbox1 = QCheckBox('5 - 10kg', self)
+        self.checkbox_group_weight.addButton(self.checkbox1, 2)
+        self.checkbox1.stateChanged.connect(self.save_value)
+        #self.checkbox1.stateChanged.connect(self.checkbox1)
+        vbox_weight.addWidget(self.checkbox1)
+
+        self.checkbox2 = QCheckBox('> 10kg', self)
+        self.checkbox_group_weight.addButton(self.checkbox2, 3)
+        self.checkbox2.stateChanged.connect(self.save_value)
+        #self.checkbox2.stateChanged.connect(self.checkbox2)
+        vbox_weight.addWidget(self.checkbox2)
+
+        vbox_neck = QVBoxLayout()
+        self.label_neck = QLabel("Neck condition:", self)
+        vbox_neck.addWidget(self.label_neck)
+        # Create a QCheckBox widget
+        self.checkbox3 = QCheckBox('Twisted', self)
+        self.checkbox3.stateChanged.connect(self.save_value)
+        vbox_neck.addWidget(self.checkbox3)
+        self.checkbox4 = QCheckBox('Side Bending', self)
+        self.checkbox4.stateChanged.connect(self.save_value)
+        vbox_neck.addWidget(self.checkbox4)
+
+        vbox_trunk = QVBoxLayout()
+        self.label_trunk = QLabel("Trunk condition:", self)
+        vbox_trunk.addWidget(self.label_trunk)
+        # Create a QCheckBox widget
+        self.checkbox5 = QCheckBox('Twisted', self)
+        self.checkbox5.stateChanged.connect(self.save_value)
+        vbox_trunk.addWidget(self.checkbox5)
+        self.checkbox6 = QCheckBox('Side Bending', self)
+        self.checkbox6.stateChanged.connect(self.save_value)
+        vbox_trunk.addWidget(self.checkbox6)
+
+        vbox_u_arm = QVBoxLayout()
+        self.label_u_arm = QLabel("Upper Arm condition:", self)
+        vbox_u_arm.addWidget(self.label_u_arm)
+        # Create a QCheckBox widget
+        self.checkbox7 = QCheckBox('Shoulder is raised', self)
+        self.checkbox7.stateChanged.connect(self.save_value)
+        vbox_u_arm.addWidget(self.checkbox7)
+        self.checkbox8 = QCheckBox('Upper arm is abducted', self)
+        self.checkbox8.stateChanged.connect(self.save_value)
+        vbox_u_arm.addWidget(self.checkbox8)
+        self.checkbox9 = QCheckBox('Arm is supported/leaning', self)
+        self.checkbox9.stateChanged.connect(self.save_value)
+        vbox_u_arm.addWidget(self.checkbox9)
+
+        vbox_wrist = QVBoxLayout()
+        self.label_wrist = QLabel("Wrist condition:", self)
+        vbox_wrist.addWidget(self.label_wrist)
+        # Create a QCheckBox widget
+        self.checkbox9_1 = QCheckBox('Wrist is bent/twisted', self)
+        self.checkbox9_1.stateChanged.connect(self.save_value)
+        vbox_wrist.addWidget(self.checkbox9_1)
+
+        vbox_coupling = QVBoxLayout()
+        hbox_coupling1 = QHBoxLayout()
+        hbox_coupling2 = QHBoxLayout()
+        self.label_coupling = QLabel("Coupling Score:", self)
+        vbox_coupling.addWidget(self.label_coupling)
+        # Create a QCheckBox widget
+        self.checkbox9_2 = QCheckBox('Good', self)
+        self.checkbox9_2.stateChanged.connect(self.save_value)
+        hbox_coupling1.addWidget(self.checkbox9_2)
+        self.checkbox9_3 = QCheckBox('Fair', self)
+        self.checkbox9_3.stateChanged.connect(self.save_value)
+        hbox_coupling1.addWidget(self.checkbox9_3)
+        self.checkbox9_4 = QCheckBox('Poor', self)
+        self.checkbox9_4.stateChanged.connect(self.save_value)
+        hbox_coupling2.addWidget(self.checkbox9_4)
+        self.checkbox9_5 = QCheckBox('Unaccceptable', self)
+        self.checkbox9_5.stateChanged.connect(self.save_value)
+        hbox_coupling2.addWidget(self.checkbox9_5)
+
+        vbox_coupling.addLayout(hbox_coupling1)
+        vbox_coupling.addLayout(hbox_coupling2)
+
+        layout_h.addLayout(vbox_weight)
+        layout_h.addLayout(vbox_neck)
+        layout_h.addLayout(vbox_trunk)
+        layout_h.addLayout(vbox_u_arm)
+        layout_h.addLayout(vbox_wrist)
+        layout_h.addLayout(vbox_coupling)
+        # Call the function to load checkbox states
+        self.load_checkbox_states()
         # end
         
 
@@ -290,31 +356,88 @@ class PlayPauseCountSlider(QWidget):
         self._slider.setValue(0)
 
     #-------------------------------------------------
-    def get_selected_values(self):
-        # Iterate through the checkboxes and print the IDs of checked ones
-        for button in self.checkbox_group_weight.buttons():
-            if button.isChecked():
-                button_id = self.checkbox_group_weight.id(button)
-                print(f"Checkbox ID: {button_id}")
+    # def save_value(self):
+    #     for checkbox in self.checkbox_group_weight.buttons():
+    #         if checkbox.isChecked():
+    #             print(f'{checkbox.text()} is checked')
+    #         else:
+    #             print(f'{checkbox.text()} is unchecked')
+    def save_value(self):
+        config = configparser.ConfigParser()
+        config['DEFAULT'] = {
+            'Checkbox0State': 'checked' if self.checkbox0.isChecked() else 'unchecked',
+            'Checkbox1State': 'checked' if self.checkbox1.isChecked() else 'unchecked',
+            'Checkbox2State': 'checked' if self.checkbox2.isChecked() else 'unchecked',
+            'Checkbox3State': 'checked' if self.checkbox2.isChecked() else 'unchecked',
+            'Checkbox4State': 'checked' if self.checkbox3.isChecked() else 'unchecked',
+            'Checkbox5State': 'checked' if self.checkbox4.isChecked() else 'unchecked',
+            'Checkbox6State': 'checked' if self.checkbox5.isChecked() else 'unchecked',
+            'Checkbox7State': 'checked' if self.checkbox6.isChecked() else 'unchecked',
+            'Checkbox8State': 'checked' if self.checkbox8.isChecked() else 'unchecked',
+            'Checkbox9State': 'checked' if self.checkbox9.isChecked() else 'unchecked',
+            'Checkbox9_1State': 'checked' if self.checkbox9_1.isChecked() else 'unchecked',
+            'Checkbox9_2State': 'checked' if self.checkbox9_2.isChecked() else 'unchecked',
+            'Checkbox9_3State': 'checked' if self.checkbox9_3.isChecked() else 'unchecked',
+            'Checkbox9_4State': 'checked' if self.checkbox9_4.isChecked() else 'unchecked',
+            'Checkbox9_5State': 'checked' if self.checkbox9_5.isChecked() else 'unchecked'
+        }
+        with open('config_check.ini', 'w') as configfile:
+            config.write(configfile)
+        print("Saved checkbox states")
 
-    def get_checkbox_value(self):
-        checkbox4_state = self.checkbox4.isChecked()
-        checkbox5_state = self.checkbox5.isChecked()
-        print(self.checkbox4.isChecked())
+    def load_checkbox_states(self):
+        config = configparser.ConfigParser()
+        config['DEFAULT'] = {}
+        # Save the state of each checkbox
+        for checkbox_attr in dir(self):
+            if checkbox_attr.startswith("checkbox") and hasattr(getattr(self, checkbox_attr), "isChecked"):
+                checkbox_state = "checked" if getattr(self, checkbox_attr).isChecked() else "unchecked"
+                config['DEFAULT'][checkbox_attr + 'State'] = checkbox_state
+        with open('config_check.ini', 'w') as configfile:
+            config.write(configfile)
+        print("Saved checkbox states")
+        print("Loaded checkbox states")
+
+    def read_config(self):
+        config = configparser.ConfigParser()
+        config.read(self.config_check_path)
+        
+        option_values = []
+        for key, value in config.items('DEFAULT'):
+            if value.lower() == 'unchecked':
+                option_values.append(False)
+            elif value.lower() == 'checked':
+                option_values.append(True)
+            else:
+                option_values.append(value)
+        
+        return option_values
     
     def on_click(self):
-        # Get the text from the textbox
         file_path = self.textbox.text()
-        
-        # Check if the file exists
         if os.path.exists(file_path):
-            # If the file exists, update the global variable
             self.file_path = file_path
-            
-            # Save the text box value
-            self.save_textbox_value(self.file_path)
-            
             message = f'File exists: {self.file_path}'
+            self.save_textbox_value(self.file_path)
+
+            self.angles_dict = self.csv_to_dict(self.file_path)
+            self.col_len = self.get_csv_column_length(self.file_path) 
+            self.reba_arr = []
+
+            print("DataTF:", self.dataTF)
+            print("Angles Dict:", self.angles_dict)
+            print("Column Length:", self.col_len)
+
+            for i in range(self.col_len):
+                reba_value = self.calculate_reba(self.angles_dict, i)
+                self.reba_arr.append(reba_value)
+                print(f"REBA Value at {i}: {reba_value}")
+
+            self.update_csv_column(self.file_path, self.reba_arr, 12)
+
+            print("Final Angles Dict:", self.angles_dict)
+            print("REBA Array Length:", len(self.reba_arr))
+            print("Column Length:", self.col_len)
         else:
             message = f'File does not exist: {file_path}'
         
@@ -351,3 +474,273 @@ class PlayPauseCountSlider(QWidget):
             return file_path
         else:
             return None
+        
+    def get_csv_column_length(self, file_path, column_name='neck'):
+        try:
+            # Read the CSV file into a DataFrame
+            df = pd.read_csv(file_path)
+            
+            # Check if the column exists in the DataFrame
+            if column_name not in df.columns:
+                raise ValueError(f"Column '{column_name}' not found in the CSV file.")
+            
+            # Get the length of the specified column
+            column_length = len(df[column_name])
+            return column_length
+        except FileNotFoundError:
+            print(f"Error: The file at path '{file_path}' was not found.")
+            return -1
+        except Exception as e:
+            print(f"An error occurred: {e}")
+            return -1
+        
+    def update_csv_column(self, file_path, new_column_data, target_column_index=12):
+        # Read the existing CSV data into a DataFrame
+        df = pd.read_csv(file_path)
+
+        # Check if the target column index is within the bounds of the DataFrame
+        if target_column_index >= len(df.columns):
+            raise IndexError("Target column index is out of bounds")
+
+        # Ensure new_column_data has the same number of rows as the existing data
+        if len(new_column_data) != len(df):
+            raise ValueError("Length of new_column_data must match the number of rows in the CSV file")
+
+        # Update the specific column in the DataFrame
+        df.iloc[:, target_column_index] = new_column_data
+
+        # Write the updated DataFrame back to the CSV file
+        df.to_csv(file_path, index=False)
+
+    def csv_to_dict(self, file_path):
+        df = pd.read_csv(file_path)
+        columns = {
+            'neck': df['neck'].tolist(),
+            'trunk': df['trunk'].tolist(),
+            'upper_left_arm': df['upper_left_arm'].tolist(),
+            'upper_right_arm': df['upper_right_arm'].tolist(),
+            'upper_left_leg': df['upper_left_leg'].tolist(),
+            'upper_right_leg': df['upper_right_leg'].tolist(),
+            'lower_left_arm': df['lower_left_arm'].tolist(),
+            'lower_right_arm': df['lower_right_arm'].tolist(),
+            'lower_left_leg': df['lower_left_leg'].tolist(),
+            'lower_right_leg': df['lower_right_leg'].tolist(),
+            'left_wrist': df['left_wrist'].tolist(),
+            'right_wrist': df['right_wrist'].tolist(),
+            'REBA': df['REBA'].tolist()
+        }
+        return columns
+    
+    def calculate_reba(self, angles_dict, i):
+        if self.dataTF[0] is True:
+            if self.dataTF[11] is True:
+                calc_reba = DegreetoREBA([
+                    angles_dict['neck'][i], self.dataTF[3], self.dataTF[4], 
+                    angles_dict['trunk'][i], self.dataTF[5], self.dataTF[6], 
+                    angles_dict['lower_right_leg'][i], angles_dict['lower_left_leg'][i],
+                    self.dataTF[0],
+                    angles_dict['upper_right_arm'][i], angles_dict['upper_left_arm'][i], self.dataTF[7], self.dataTF[8], self.dataTF[9],
+                    angles_dict['lower_right_arm'][i], angles_dict['lower_left_arm'][i],
+                    angles_dict['left_wrist'][i], angles_dict['right_wrist'][i], self.dataTF[10],
+                    0
+                    ])
+                score_res = calc_reba.reba_computation()
+                return score_res
+            if self.dataTF[12] is True:
+                calc_reba = DegreetoREBA([
+                    angles_dict['neck'][i], self.dataTF[3], self.dataTF[4], 
+                    angles_dict['trunk'][i], self.dataTF[5], self.dataTF[6], 
+                    angles_dict['lower_right_leg'][i], angles_dict['lower_left_leg'][i],
+                    self.dataTF[0],
+                    angles_dict['upper_right_arm'][i], angles_dict['upper_left_arm'][i], self.dataTF[7], self.dataTF[8], self.dataTF[9],
+                    angles_dict['lower_right_arm'][i], angles_dict['lower_left_arm'][i],
+                    angles_dict['left_wrist'][i], angles_dict['right_wrist'][i], self.dataTF[10],
+                    1
+                    ])
+                score_res = calc_reba.reba_computation()
+                return score_res
+            if self.dataTF[13] is True:
+                calc_reba = DegreetoREBA([
+                    angles_dict['neck'][i], self.dataTF[3], self.dataTF[4], 
+                    angles_dict['trunk'][i], self.dataTF[5], self.dataTF[6], 
+                    angles_dict['lower_right_leg'][i], angles_dict['lower_left_leg'][i],
+                    self.dataTF[0],
+                    angles_dict['upper_right_arm'][i], angles_dict['upper_left_arm'][i], self.dataTF[7], self.dataTF[8], self.dataTF[9],
+                    angles_dict['lower_right_arm'][i], angles_dict['lower_left_arm'][i],
+                    angles_dict['left_wrist'][i], angles_dict['right_wrist'][i], self.dataTF[10],
+                    2
+                    ])
+                score_res = calc_reba.reba_computation()
+                return score_res
+            if self.dataTF[14] is True:
+                calc_reba = DegreetoREBA([
+                    angles_dict['neck'][i], self.dataTF[3], self.dataTF[4], 
+                    angles_dict['trunk'][i], self.dataTF[5], self.dataTF[6], 
+                    angles_dict['lower_right_leg'][i], angles_dict['lower_left_leg'][i],
+                    self.dataTF[0],
+                    angles_dict['upper_right_arm'][i], angles_dict['upper_left_arm'][i], self.dataTF[7], self.dataTF[8], self.dataTF[9],
+                    angles_dict['lower_right_arm'][i], angles_dict['lower_left_arm'][i],
+                    angles_dict['left_wrist'][i], angles_dict['right_wrist'][i], self.dataTF[10],
+                    3
+                    ])
+                score_res = calc_reba.reba_computation()
+                return score_res
+            else:
+                calc_reba = DegreetoREBA([
+                    angles_dict['neck'][i], self.dataTF[3], self.dataTF[4], 
+                    angles_dict['trunk'][i], self.dataTF[5], self.dataTF[6], 
+                    angles_dict['lower_right_leg'][i], angles_dict['lower_left_leg'][i],
+                    False,
+                    angles_dict['upper_right_arm'][i], angles_dict['upper_left_arm'][i], self.dataTF[7], self.dataTF[8], self.dataTF[9],
+                    angles_dict['lower_right_arm'][i], angles_dict['lower_left_arm'][i],
+                    angles_dict['left_wrist'][i], angles_dict['right_wrist'][i], self.dataTF[10],
+                    0
+                    ])
+                score_res = calc_reba.reba_computation()
+                return score_res
+        if self.dataTF[1] is True:
+            if self.dataTF[11] is True:
+                calc_reba = DegreetoREBA([
+                    angles_dict['neck'][i], self.dataTF[3], self.dataTF[4], 
+                    angles_dict['trunk'][i], self.dataTF[5], self.dataTF[6], 
+                    angles_dict['lower_right_leg'][i], angles_dict['lower_left_leg'][i],
+                    self.dataTF[1],
+                    angles_dict['upper_right_arm'][i], angles_dict['upper_left_arm'][i], self.dataTF[7], self.dataTF[8], self.dataTF[9],
+                    angles_dict['lower_right_arm'][i], angles_dict['lower_left_arm'][i],
+                    angles_dict['left_wrist'][i], angles_dict['right_wrist'][i], self.dataTF[10],
+                    0
+                    ])
+                score_res = calc_reba.reba_computation()
+                return score_res
+            if self.dataTF[12] is True:
+                calc_reba = DegreetoREBA([
+                    angles_dict['neck'][i], self.dataTF[3], self.dataTF[4], 
+                    angles_dict['trunk'][i], self.dataTF[5], self.dataTF[6], 
+                    angles_dict['lower_right_leg'][i], angles_dict['lower_left_leg'][i],
+                    self.dataTF[1],
+                    angles_dict['upper_right_arm'][i], angles_dict['upper_left_arm'][i], self.dataTF[7], self.dataTF[8], self.dataTF[9],
+                    angles_dict['lower_right_arm'][i], angles_dict['lower_left_arm'][i],
+                    angles_dict['left_wrist'][i], angles_dict['right_wrist'][i], self.dataTF[10],
+                    1
+                    ])
+                score_res = calc_reba.reba_computation()
+                return score_res
+            if self.dataTF[13] is True:
+                calc_reba = DegreetoREBA([
+                    angles_dict['neck'][i], self.dataTF[3], self.dataTF[4], 
+                    angles_dict['trunk'][i], self.dataTF[5], self.dataTF[6], 
+                    angles_dict['lower_right_leg'][i], angles_dict['lower_left_leg'][i],
+                    self.dataTF[1],
+                    angles_dict['upper_right_arm'][i], angles_dict['upper_left_arm'][i], self.dataTF[7], self.dataTF[8], self.dataTF[9],
+                    angles_dict['lower_right_arm'][i], angles_dict['lower_left_arm'][i],
+                    angles_dict['left_wrist'][i], angles_dict['right_wrist'][i], self.dataTF[10],
+                    2
+                    ])
+                score_res = calc_reba.reba_computation()
+                return score_res
+            if self.dataTF[14] is True:
+                calc_reba = DegreetoREBA([
+                    angles_dict['neck'][i], self.dataTF[3], self.dataTF[4], 
+                    angles_dict['trunk'][i], self.dataTF[5], self.dataTF[6], 
+                    angles_dict['lower_right_leg'][i], angles_dict['lower_left_leg'][i],
+                    self.dataTF[1],
+                    angles_dict['upper_right_arm'][i], angles_dict['upper_left_arm'][i], self.dataTF[7], self.dataTF[8], self.dataTF[9],
+                    angles_dict['lower_right_arm'][i], angles_dict['lower_left_arm'][i],
+                    angles_dict['left_wrist'][i], angles_dict['right_wrist'][i], self.dataTF[10],
+                    3
+                    ])
+                score_res = calc_reba.reba_computation()
+                return score_res
+            else:
+                calc_reba = DegreetoREBA([
+                    angles_dict['neck'][i], self.dataTF[3], self.dataTF[4], 
+                    angles_dict['trunk'][i], self.dataTF[5], self.dataTF[6], 
+                    angles_dict['lower_right_leg'][i], angles_dict['lower_left_leg'][i],
+                    False,
+                    angles_dict['upper_right_arm'][i], angles_dict['upper_left_arm'][i], self.dataTF[7], self.dataTF[8], self.dataTF[9],
+                    angles_dict['lower_right_arm'][i], angles_dict['lower_left_arm'][i],
+                    angles_dict['left_wrist'][i], angles_dict['right_wrist'][i], self.dataTF[10],
+                    0
+                    ])
+                score_res = calc_reba.reba_computation()
+                return score_res
+        if self.dataTF[2] is True:
+            if self.dataTF[11] is True:
+                calc_reba = DegreetoREBA([
+                    angles_dict['neck'][i], self.dataTF[3], self.dataTF[4], 
+                    angles_dict['trunk'][i], self.dataTF[5], self.dataTF[6], 
+                    angles_dict['lower_right_leg'][i], angles_dict['lower_left_leg'][i],
+                    self.dataTF[2],
+                    angles_dict['upper_right_arm'][i], angles_dict['upper_left_arm'][i], self.dataTF[7], self.dataTF[8], self.dataTF[9],
+                    angles_dict['lower_right_arm'][i], angles_dict['lower_left_arm'][i],
+                    angles_dict['left_wrist'][i], angles_dict['right_wrist'][i], self.dataTF[10],
+                    0
+                    ])
+                score_res = calc_reba.reba_computation()
+                return score_res
+            if self.dataTF[12] is True:
+                calc_reba = DegreetoREBA([
+                    angles_dict['neck'][i], self.dataTF[3], self.dataTF[4], 
+                    angles_dict['trunk'][i], self.dataTF[5], self.dataTF[6], 
+                    angles_dict['lower_right_leg'][i], angles_dict['lower_left_leg'][i],
+                    self.dataTF[2],
+                    angles_dict['upper_right_arm'][i], angles_dict['upper_left_arm'][i], self.dataTF[7], self.dataTF[8], self.dataTF[9],
+                    angles_dict['lower_right_arm'][i], angles_dict['lower_left_arm'][i],
+                    angles_dict['left_wrist'][i], angles_dict['right_wrist'][i], self.dataTF[10],
+                    1
+                    ])
+                score_res = calc_reba.reba_computation()
+                return score_res
+            if self.dataTF[13] is True:
+                calc_reba = DegreetoREBA([
+                    angles_dict['neck'][i], self.dataTF[3], self.dataTF[4], 
+                    angles_dict['trunk'][i], self.dataTF[5], self.dataTF[6], 
+                    angles_dict['lower_right_leg'][i], angles_dict['lower_left_leg'][i],
+                    self.dataTF[2],
+                    angles_dict['upper_right_arm'][i], angles_dict['upper_left_arm'][i], self.dataTF[7], self.dataTF[8], self.dataTF[9],
+                    angles_dict['lower_right_arm'][i], angles_dict['lower_left_arm'][i],
+                    angles_dict['left_wrist'][i], angles_dict['right_wrist'][i], self.dataTF[10],
+                    2
+                    ])
+                score_res = calc_reba.reba_computation()
+                return score_res
+            if self.dataTF[14] is True:
+                calc_reba = DegreetoREBA([
+                    angles_dict['neck'][i], self.dataTF[3], self.dataTF[4], 
+                    angles_dict['trunk'][i], self.dataTF[5], self.dataTF[6], 
+                    angles_dict['lower_right_leg'][i], angles_dict['lower_left_leg'][i],
+                    self.dataTF[2],
+                    angles_dict['upper_right_arm'][i], angles_dict['upper_left_arm'][i], self.dataTF[7], self.dataTF[8], self.dataTF[9],
+                    angles_dict['lower_right_arm'][i], angles_dict['lower_left_arm'][i],
+                    angles_dict['left_wrist'][i], angles_dict['right_wrist'][i], self.dataTF[10],
+                    3
+                    ])
+                score_res = calc_reba.reba_computation()
+                return score_res
+            else:
+                calc_reba = DegreetoREBA([
+                    angles_dict['neck'][i], self.dataTF[3], self.dataTF[4], 
+                    angles_dict['trunk'][i], self.dataTF[5], self.dataTF[6], 
+                    angles_dict['lower_right_leg'][i], angles_dict['lower_left_leg'][i],
+                    False,
+                    angles_dict['upper_right_arm'][i], angles_dict['upper_left_arm'][i], self.dataTF[7], self.dataTF[8], self.dataTF[9],
+                    angles_dict['lower_right_arm'][i], angles_dict['lower_left_arm'][i],
+                    angles_dict['left_wrist'][i], angles_dict['right_wrist'][i], self.dataTF[10],
+                    0
+                    ])
+                score_res = calc_reba.reba_computation()
+                return score_res
+        else:
+            #print("Asumming all limbs condition doesn't require adjustments since initial weight isn't checked")
+            calc_reba = DegreetoREBA([
+                        angles_dict['neck'][i], False, False, 
+                        angles_dict['trunk'][i], False, False, 
+                        angles_dict['lower_right_leg'][i], angles_dict['lower_left_leg'][i],
+                        False,
+                        angles_dict['upper_right_arm'][i], angles_dict['upper_left_arm'][i], False, False, False,
+                        angles_dict['lower_right_arm'][i], angles_dict['lower_left_arm'][i],
+                        angles_dict['left_wrist'][i], angles_dict['right_wrist'][i], False,
+                        0
+                        ])
+            score_res = calc_reba.reba_computation()
+            return score_res
