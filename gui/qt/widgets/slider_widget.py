@@ -155,6 +155,7 @@ class PlayPauseCountSlider(QWidget):
                 self.arr10 = read_from_csv(angles_csv,9)
                 self.arr11 = read_from_csv(angles_csv, 10)
                 self.arr12 = read_from_csv(angles_csv,11)
+                self.arr13 = read_from_csv(angles_csv,12)
 
                 # angles display addition start
                 new_hbox = QHBoxLayout()
@@ -210,10 +211,19 @@ class PlayPauseCountSlider(QWidget):
                 self._slider.valueChanged.connect(lambda:self._frame_count_label12.setText(f"\nLeft Wrist: {self.arr12[self._slider.value()]}"))
                 self._frame_count_label12 = QLabel(f"Left Wrist: {self._slider.value()}")
                 new_hbox1.addWidget(self._frame_count_label12)
+
+                new_hbox_reba = QHBoxLayout()
+                self._layout.addLayout(new_hbox_reba)
+
+                self._slider.valueChanged.connect(lambda:self._frame_count_label13.setText(f"\nREBA Score: {self.arr13[self._slider.value()]}"))
+                self._frame_count_label13 = QLabel(f"REBA Score: {self._slider.value()}")
+                new_hbox_reba.addWidget(self._frame_count_label13)
             else:
                 pass
         #--------------------Condition-----------------------------
         vbox_weight = QVBoxLayout()
+        hbox_weight1 = QHBoxLayout()
+        hbox_weight2 = QHBoxLayout()
         self.label_weight = QLabel("Weight (kg):", self)
         vbox_weight.addWidget(self.label_weight)
         self.checkbox_group_weight = QButtonGroup(self)
@@ -224,19 +234,19 @@ class PlayPauseCountSlider(QWidget):
         self.checkbox_group_weight.addButton(self.checkbox0, 1)
         self.checkbox0.stateChanged.connect(self.save_value)
         #self.checkbox0.stateChanged.connect(self.checkbox0)
-        vbox_weight.addWidget(self.checkbox0)
+        hbox_weight1.addWidget(self.checkbox0)
 
         self.checkbox1 = QCheckBox('5 - 10kg', self)
         self.checkbox_group_weight.addButton(self.checkbox1, 2)
         self.checkbox1.stateChanged.connect(self.save_value)
         #self.checkbox1.stateChanged.connect(self.checkbox1)
-        vbox_weight.addWidget(self.checkbox1)
+        hbox_weight1.addWidget(self.checkbox1)
 
         self.checkbox2 = QCheckBox('> 10kg', self)
         self.checkbox_group_weight.addButton(self.checkbox2, 3)
         self.checkbox2.stateChanged.connect(self.save_value)
         #self.checkbox2.stateChanged.connect(self.checkbox2)
-        vbox_weight.addWidget(self.checkbox2)
+        hbox_weight2.addWidget(self.checkbox2)
 
         vbox_neck = QVBoxLayout()
         self.label_neck = QLabel("Neck condition:", self)
@@ -250,56 +260,75 @@ class PlayPauseCountSlider(QWidget):
         vbox_neck.addWidget(self.checkbox4)
 
         vbox_trunk = QVBoxLayout()
+        hbox_trunk1 = QVBoxLayout()
         self.label_trunk = QLabel("Trunk condition:", self)
         vbox_trunk.addWidget(self.label_trunk)
         # Create a QCheckBox widget
         self.checkbox5 = QCheckBox('Twisted', self)
         self.checkbox5.stateChanged.connect(self.save_value)
-        vbox_trunk.addWidget(self.checkbox5)
+        hbox_trunk1.addWidget(self.checkbox5)
         self.checkbox6 = QCheckBox('Side Bending', self)
         self.checkbox6.stateChanged.connect(self.save_value)
-        vbox_trunk.addWidget(self.checkbox6)
+        hbox_trunk1.addWidget(self.checkbox6)
 
         vbox_u_arm = QVBoxLayout()
+        hbox_u_arm1 = QHBoxLayout()
+        hbox_u_arm2 = QHBoxLayout()
         self.label_u_arm = QLabel("Upper Arm condition:", self)
         vbox_u_arm.addWidget(self.label_u_arm)
         # Create a QCheckBox widget
         self.checkbox7 = QCheckBox('Shoulder is raised', self)
         self.checkbox7.stateChanged.connect(self.save_value)
-        vbox_u_arm.addWidget(self.checkbox7)
-        self.checkbox8 = QCheckBox('Upper arm is abducted', self)
+        hbox_u_arm1.addWidget(self.checkbox7)
+        self.checkbox8 = QCheckBox('Arm is abducted', self)
         self.checkbox8.stateChanged.connect(self.save_value)
-        vbox_u_arm.addWidget(self.checkbox8)
+        hbox_u_arm1.addWidget(self.checkbox8)
         self.checkbox9 = QCheckBox('Arm is supported/leaning', self)
         self.checkbox9.stateChanged.connect(self.save_value)
-        vbox_u_arm.addWidget(self.checkbox9)
+        hbox_u_arm2.addWidget(self.checkbox9)
 
         vbox_wrist = QVBoxLayout()
+        vbox_wrist.setAlignment(Qt.AlignmentFlag.AlignTop)
         self.label_wrist = QLabel("Wrist condition:", self)
         vbox_wrist.addWidget(self.label_wrist)
         # Create a QCheckBox widget
-        self.checkbox9_1 = QCheckBox('Wrist is bent/twisted', self)
+        self.checkbox9_1 = QCheckBox('Bent/twisted', self)
         self.checkbox9_1.stateChanged.connect(self.save_value)
         vbox_wrist.addWidget(self.checkbox9_1)
 
         vbox_coupling = QVBoxLayout()
         hbox_coupling1 = QHBoxLayout()
         hbox_coupling2 = QHBoxLayout()
+        self.checkbox_group_coupling = QButtonGroup(self)
+        self.checkbox_group_coupling.setExclusive(True)
         self.label_coupling = QLabel("Coupling Score:", self)
         vbox_coupling.addWidget(self.label_coupling)
+
         # Create a QCheckBox widget
         self.checkbox9_2 = QCheckBox('Good', self)
+        self.checkbox_group_coupling.addButton(self.checkbox9_2, 1)
         self.checkbox9_2.stateChanged.connect(self.save_value)
         hbox_coupling1.addWidget(self.checkbox9_2)
         self.checkbox9_3 = QCheckBox('Fair', self)
+        self.checkbox_group_coupling.addButton(self.checkbox9_3, 2)
         self.checkbox9_3.stateChanged.connect(self.save_value)
-        hbox_coupling1.addWidget(self.checkbox9_3)
+        hbox_coupling1.addWidget(self.checkbox9_3, alignment=Qt.AlignmentFlag.AlignLeft)
         self.checkbox9_4 = QCheckBox('Poor', self)
+        self.checkbox_group_coupling.addButton(self.checkbox9_4, 3)
         self.checkbox9_4.stateChanged.connect(self.save_value)
         hbox_coupling2.addWidget(self.checkbox9_4)
         self.checkbox9_5 = QCheckBox('Unaccceptable', self)
+        self.checkbox_group_coupling.addButton(self.checkbox9_5, 4)
         self.checkbox9_5.stateChanged.connect(self.save_value)
-        hbox_coupling2.addWidget(self.checkbox9_5)
+        hbox_coupling2.addWidget(self.checkbox9_5, alignment=Qt.AlignmentFlag.AlignLeft)
+
+        vbox_weight.addLayout(hbox_weight1)
+        vbox_weight.addLayout(hbox_weight2)
+
+        vbox_trunk.addLayout(hbox_trunk1)
+
+        vbox_u_arm.addLayout(hbox_u_arm1)
+        vbox_u_arm.addLayout(hbox_u_arm2)
 
         vbox_coupling.addLayout(hbox_coupling1)
         vbox_coupling.addLayout(hbox_coupling2)
@@ -368,11 +397,11 @@ class PlayPauseCountSlider(QWidget):
             'Checkbox0State': 'checked' if self.checkbox0.isChecked() else 'unchecked',
             'Checkbox1State': 'checked' if self.checkbox1.isChecked() else 'unchecked',
             'Checkbox2State': 'checked' if self.checkbox2.isChecked() else 'unchecked',
-            'Checkbox3State': 'checked' if self.checkbox2.isChecked() else 'unchecked',
-            'Checkbox4State': 'checked' if self.checkbox3.isChecked() else 'unchecked',
-            'Checkbox5State': 'checked' if self.checkbox4.isChecked() else 'unchecked',
-            'Checkbox6State': 'checked' if self.checkbox5.isChecked() else 'unchecked',
-            'Checkbox7State': 'checked' if self.checkbox6.isChecked() else 'unchecked',
+            'Checkbox3State': 'checked' if self.checkbox3.isChecked() else 'unchecked',
+            'Checkbox4State': 'checked' if self.checkbox4.isChecked() else 'unchecked',
+            'Checkbox5State': 'checked' if self.checkbox5.isChecked() else 'unchecked',
+            'Checkbox6State': 'checked' if self.checkbox6.isChecked() else 'unchecked',
+            'Checkbox7State': 'checked' if self.checkbox7.isChecked() else 'unchecked',
             'Checkbox8State': 'checked' if self.checkbox8.isChecked() else 'unchecked',
             'Checkbox9State': 'checked' if self.checkbox9.isChecked() else 'unchecked',
             'Checkbox9_1State': 'checked' if self.checkbox9_1.isChecked() else 'unchecked',
@@ -387,16 +416,19 @@ class PlayPauseCountSlider(QWidget):
 
     def load_checkbox_states(self):
         config = configparser.ConfigParser()
-        config['DEFAULT'] = {}
-        # Save the state of each checkbox
+        
+        # Check if the config file exists before trying to read it
+        if os.path.exists('config_check.ini'):
+            config.read('config_check.ini')
+        
+        # Load the state of each checkbox
         for checkbox_attr in dir(self):
-            if checkbox_attr.startswith("checkbox") and hasattr(getattr(self, checkbox_attr), "isChecked"):
-                checkbox_state = "checked" if getattr(self, checkbox_attr).isChecked() else "unchecked"
-                config['DEFAULT'][checkbox_attr + 'State'] = checkbox_state
-        with open('config_check.ini', 'w') as configfile:
-            config.write(configfile)
-        print("Saved checkbox states")
-        print("Loaded checkbox states")
+            if checkbox_attr.startswith("checkbox") and hasattr(getattr(self, checkbox_attr), "setChecked"):
+                checkbox_state = config['DEFAULT'].get(checkbox_attr + 'State', 'unchecked')
+                is_checked = checkbox_state == 'checked'
+                getattr(self, checkbox_attr).setChecked(is_checked)
+    
+    print("Loaded checkbox states")
 
     def read_config(self):
         config = configparser.ConfigParser()
@@ -424,9 +456,9 @@ class PlayPauseCountSlider(QWidget):
             self.col_len = self.get_csv_column_length(self.file_path) 
             self.reba_arr = []
 
-            print("DataTF:", self.dataTF)
-            print("Angles Dict:", self.angles_dict)
-            print("Column Length:", self.col_len)
+            # print("DataTF:", self.dataTF)
+            # print("Angles Dict:", self.angles_dict)
+            # print("Column Length:", self.col_len)
 
             for i in range(self.col_len):
                 reba_value = self.calculate_reba(self.angles_dict, i)
@@ -435,9 +467,13 @@ class PlayPauseCountSlider(QWidget):
 
             self.update_csv_column(self.file_path, self.reba_arr, 12)
 
-            print("Final Angles Dict:", self.angles_dict)
-            print("REBA Array Length:", len(self.reba_arr))
-            print("Column Length:", self.col_len)
+            # try:
+            #     self._slider.valueChanged.connect(lambda:self._frame_count_label13.setText(f"\nREBA Score: {self.arr13[self._slider.value()]}"))
+            # except Exception as e:
+            #     self._frame_count_label13.setText("Error")
+            # print("Final Angles Dict:", self.angles_dict)
+            # print("REBA Array Length:", len(self.reba_arr))
+            # print("Column Length:", self.col_len)
         else:
             message = f'File does not exist: {file_path}'
         
@@ -538,7 +574,7 @@ class PlayPauseCountSlider(QWidget):
                     angles_dict['neck'][i], self.dataTF[3], self.dataTF[4], 
                     angles_dict['trunk'][i], self.dataTF[5], self.dataTF[6], 
                     angles_dict['lower_right_leg'][i], angles_dict['lower_left_leg'][i],
-                    self.dataTF[0],
+                    0,
                     angles_dict['upper_right_arm'][i], angles_dict['upper_left_arm'][i], self.dataTF[7], self.dataTF[8], self.dataTF[9],
                     angles_dict['lower_right_arm'][i], angles_dict['lower_left_arm'][i],
                     angles_dict['left_wrist'][i], angles_dict['right_wrist'][i], self.dataTF[10],
@@ -546,12 +582,12 @@ class PlayPauseCountSlider(QWidget):
                     ])
                 score_res = calc_reba.reba_computation()
                 return score_res
-            if self.dataTF[12] is True:
+            elif self.dataTF[12] is True:
                 calc_reba = DegreetoREBA([
                     angles_dict['neck'][i], self.dataTF[3], self.dataTF[4], 
                     angles_dict['trunk'][i], self.dataTF[5], self.dataTF[6], 
                     angles_dict['lower_right_leg'][i], angles_dict['lower_left_leg'][i],
-                    self.dataTF[0],
+                    0,
                     angles_dict['upper_right_arm'][i], angles_dict['upper_left_arm'][i], self.dataTF[7], self.dataTF[8], self.dataTF[9],
                     angles_dict['lower_right_arm'][i], angles_dict['lower_left_arm'][i],
                     angles_dict['left_wrist'][i], angles_dict['right_wrist'][i], self.dataTF[10],
@@ -559,12 +595,12 @@ class PlayPauseCountSlider(QWidget):
                     ])
                 score_res = calc_reba.reba_computation()
                 return score_res
-            if self.dataTF[13] is True:
+            elif self.dataTF[13] is True:
                 calc_reba = DegreetoREBA([
                     angles_dict['neck'][i], self.dataTF[3], self.dataTF[4], 
                     angles_dict['trunk'][i], self.dataTF[5], self.dataTF[6], 
                     angles_dict['lower_right_leg'][i], angles_dict['lower_left_leg'][i],
-                    self.dataTF[0],
+                    0,
                     angles_dict['upper_right_arm'][i], angles_dict['upper_left_arm'][i], self.dataTF[7], self.dataTF[8], self.dataTF[9],
                     angles_dict['lower_right_arm'][i], angles_dict['lower_left_arm'][i],
                     angles_dict['left_wrist'][i], angles_dict['right_wrist'][i], self.dataTF[10],
@@ -572,12 +608,12 @@ class PlayPauseCountSlider(QWidget):
                     ])
                 score_res = calc_reba.reba_computation()
                 return score_res
-            if self.dataTF[14] is True:
+            elif self.dataTF[14] is True:
                 calc_reba = DegreetoREBA([
                     angles_dict['neck'][i], self.dataTF[3], self.dataTF[4], 
                     angles_dict['trunk'][i], self.dataTF[5], self.dataTF[6], 
                     angles_dict['lower_right_leg'][i], angles_dict['lower_left_leg'][i],
-                    self.dataTF[0],
+                    0,
                     angles_dict['upper_right_arm'][i], angles_dict['upper_left_arm'][i], self.dataTF[7], self.dataTF[8], self.dataTF[9],
                     angles_dict['lower_right_arm'][i], angles_dict['lower_left_arm'][i],
                     angles_dict['left_wrist'][i], angles_dict['right_wrist'][i], self.dataTF[10],
@@ -590,7 +626,7 @@ class PlayPauseCountSlider(QWidget):
                     angles_dict['neck'][i], self.dataTF[3], self.dataTF[4], 
                     angles_dict['trunk'][i], self.dataTF[5], self.dataTF[6], 
                     angles_dict['lower_right_leg'][i], angles_dict['lower_left_leg'][i],
-                    False,
+                    0,
                     angles_dict['upper_right_arm'][i], angles_dict['upper_left_arm'][i], self.dataTF[7], self.dataTF[8], self.dataTF[9],
                     angles_dict['lower_right_arm'][i], angles_dict['lower_left_arm'][i],
                     angles_dict['left_wrist'][i], angles_dict['right_wrist'][i], self.dataTF[10],
@@ -598,13 +634,13 @@ class PlayPauseCountSlider(QWidget):
                     ])
                 score_res = calc_reba.reba_computation()
                 return score_res
-        if self.dataTF[1] is True:
+        elif self.dataTF[1] is True:
             if self.dataTF[11] is True:
                 calc_reba = DegreetoREBA([
                     angles_dict['neck'][i], self.dataTF[3], self.dataTF[4], 
                     angles_dict['trunk'][i], self.dataTF[5], self.dataTF[6], 
                     angles_dict['lower_right_leg'][i], angles_dict['lower_left_leg'][i],
-                    self.dataTF[1],
+                    1,
                     angles_dict['upper_right_arm'][i], angles_dict['upper_left_arm'][i], self.dataTF[7], self.dataTF[8], self.dataTF[9],
                     angles_dict['lower_right_arm'][i], angles_dict['lower_left_arm'][i],
                     angles_dict['left_wrist'][i], angles_dict['right_wrist'][i], self.dataTF[10],
@@ -612,12 +648,12 @@ class PlayPauseCountSlider(QWidget):
                     ])
                 score_res = calc_reba.reba_computation()
                 return score_res
-            if self.dataTF[12] is True:
+            elif self.dataTF[12] is True:
                 calc_reba = DegreetoREBA([
                     angles_dict['neck'][i], self.dataTF[3], self.dataTF[4], 
                     angles_dict['trunk'][i], self.dataTF[5], self.dataTF[6], 
                     angles_dict['lower_right_leg'][i], angles_dict['lower_left_leg'][i],
-                    self.dataTF[1],
+                    1,
                     angles_dict['upper_right_arm'][i], angles_dict['upper_left_arm'][i], self.dataTF[7], self.dataTF[8], self.dataTF[9],
                     angles_dict['lower_right_arm'][i], angles_dict['lower_left_arm'][i],
                     angles_dict['left_wrist'][i], angles_dict['right_wrist'][i], self.dataTF[10],
@@ -625,12 +661,12 @@ class PlayPauseCountSlider(QWidget):
                     ])
                 score_res = calc_reba.reba_computation()
                 return score_res
-            if self.dataTF[13] is True:
+            elif self.dataTF[13] is True:
                 calc_reba = DegreetoREBA([
                     angles_dict['neck'][i], self.dataTF[3], self.dataTF[4], 
                     angles_dict['trunk'][i], self.dataTF[5], self.dataTF[6], 
                     angles_dict['lower_right_leg'][i], angles_dict['lower_left_leg'][i],
-                    self.dataTF[1],
+                    1,
                     angles_dict['upper_right_arm'][i], angles_dict['upper_left_arm'][i], self.dataTF[7], self.dataTF[8], self.dataTF[9],
                     angles_dict['lower_right_arm'][i], angles_dict['lower_left_arm'][i],
                     angles_dict['left_wrist'][i], angles_dict['right_wrist'][i], self.dataTF[10],
@@ -638,12 +674,12 @@ class PlayPauseCountSlider(QWidget):
                     ])
                 score_res = calc_reba.reba_computation()
                 return score_res
-            if self.dataTF[14] is True:
+            elif self.dataTF[14] is True:
                 calc_reba = DegreetoREBA([
                     angles_dict['neck'][i], self.dataTF[3], self.dataTF[4], 
                     angles_dict['trunk'][i], self.dataTF[5], self.dataTF[6], 
                     angles_dict['lower_right_leg'][i], angles_dict['lower_left_leg'][i],
-                    self.dataTF[1],
+                    1,
                     angles_dict['upper_right_arm'][i], angles_dict['upper_left_arm'][i], self.dataTF[7], self.dataTF[8], self.dataTF[9],
                     angles_dict['lower_right_arm'][i], angles_dict['lower_left_arm'][i],
                     angles_dict['left_wrist'][i], angles_dict['right_wrist'][i], self.dataTF[10],
@@ -656,7 +692,7 @@ class PlayPauseCountSlider(QWidget):
                     angles_dict['neck'][i], self.dataTF[3], self.dataTF[4], 
                     angles_dict['trunk'][i], self.dataTF[5], self.dataTF[6], 
                     angles_dict['lower_right_leg'][i], angles_dict['lower_left_leg'][i],
-                    False,
+                    0,
                     angles_dict['upper_right_arm'][i], angles_dict['upper_left_arm'][i], self.dataTF[7], self.dataTF[8], self.dataTF[9],
                     angles_dict['lower_right_arm'][i], angles_dict['lower_left_arm'][i],
                     angles_dict['left_wrist'][i], angles_dict['right_wrist'][i], self.dataTF[10],
@@ -664,13 +700,13 @@ class PlayPauseCountSlider(QWidget):
                     ])
                 score_res = calc_reba.reba_computation()
                 return score_res
-        if self.dataTF[2] is True:
+        elif self.dataTF[2] is True:
             if self.dataTF[11] is True:
                 calc_reba = DegreetoREBA([
                     angles_dict['neck'][i], self.dataTF[3], self.dataTF[4], 
                     angles_dict['trunk'][i], self.dataTF[5], self.dataTF[6], 
                     angles_dict['lower_right_leg'][i], angles_dict['lower_left_leg'][i],
-                    self.dataTF[2],
+                    2,
                     angles_dict['upper_right_arm'][i], angles_dict['upper_left_arm'][i], self.dataTF[7], self.dataTF[8], self.dataTF[9],
                     angles_dict['lower_right_arm'][i], angles_dict['lower_left_arm'][i],
                     angles_dict['left_wrist'][i], angles_dict['right_wrist'][i], self.dataTF[10],
@@ -678,12 +714,12 @@ class PlayPauseCountSlider(QWidget):
                     ])
                 score_res = calc_reba.reba_computation()
                 return score_res
-            if self.dataTF[12] is True:
+            elif self.dataTF[12] is True:
                 calc_reba = DegreetoREBA([
                     angles_dict['neck'][i], self.dataTF[3], self.dataTF[4], 
                     angles_dict['trunk'][i], self.dataTF[5], self.dataTF[6], 
                     angles_dict['lower_right_leg'][i], angles_dict['lower_left_leg'][i],
-                    self.dataTF[2],
+                    2,
                     angles_dict['upper_right_arm'][i], angles_dict['upper_left_arm'][i], self.dataTF[7], self.dataTF[8], self.dataTF[9],
                     angles_dict['lower_right_arm'][i], angles_dict['lower_left_arm'][i],
                     angles_dict['left_wrist'][i], angles_dict['right_wrist'][i], self.dataTF[10],
@@ -691,12 +727,12 @@ class PlayPauseCountSlider(QWidget):
                     ])
                 score_res = calc_reba.reba_computation()
                 return score_res
-            if self.dataTF[13] is True:
+            elif self.dataTF[13] is True:
                 calc_reba = DegreetoREBA([
                     angles_dict['neck'][i], self.dataTF[3], self.dataTF[4], 
                     angles_dict['trunk'][i], self.dataTF[5], self.dataTF[6], 
                     angles_dict['lower_right_leg'][i], angles_dict['lower_left_leg'][i],
-                    self.dataTF[2],
+                    2,
                     angles_dict['upper_right_arm'][i], angles_dict['upper_left_arm'][i], self.dataTF[7], self.dataTF[8], self.dataTF[9],
                     angles_dict['lower_right_arm'][i], angles_dict['lower_left_arm'][i],
                     angles_dict['left_wrist'][i], angles_dict['right_wrist'][i], self.dataTF[10],
@@ -704,12 +740,12 @@ class PlayPauseCountSlider(QWidget):
                     ])
                 score_res = calc_reba.reba_computation()
                 return score_res
-            if self.dataTF[14] is True:
+            elif self.dataTF[14] is True:
                 calc_reba = DegreetoREBA([
                     angles_dict['neck'][i], self.dataTF[3], self.dataTF[4], 
                     angles_dict['trunk'][i], self.dataTF[5], self.dataTF[6], 
                     angles_dict['lower_right_leg'][i], angles_dict['lower_left_leg'][i],
-                    self.dataTF[2],
+                    2,
                     angles_dict['upper_right_arm'][i], angles_dict['upper_left_arm'][i], self.dataTF[7], self.dataTF[8], self.dataTF[9],
                     angles_dict['lower_right_arm'][i], angles_dict['lower_left_arm'][i],
                     angles_dict['left_wrist'][i], angles_dict['right_wrist'][i], self.dataTF[10],
@@ -722,7 +758,7 @@ class PlayPauseCountSlider(QWidget):
                     angles_dict['neck'][i], self.dataTF[3], self.dataTF[4], 
                     angles_dict['trunk'][i], self.dataTF[5], self.dataTF[6], 
                     angles_dict['lower_right_leg'][i], angles_dict['lower_left_leg'][i],
-                    False,
+                    0,
                     angles_dict['upper_right_arm'][i], angles_dict['upper_left_arm'][i], self.dataTF[7], self.dataTF[8], self.dataTF[9],
                     angles_dict['lower_right_arm'][i], angles_dict['lower_left_arm'][i],
                     angles_dict['left_wrist'][i], angles_dict['right_wrist'][i], self.dataTF[10],
