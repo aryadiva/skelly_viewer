@@ -51,11 +51,11 @@ class SkellyViewer(QWidget):
             self.return_angles_path(angles_file_path)
 
         # label test
-        label_test2 = QLabel(str(video_folder_path))  
-        label_test2.setStyleSheet("font-size: 15px")
-        label_test2.setAlignment(Qt.AlignmentFlag.AlignLeft)
-        label_test2.setWordWrap(True)
-        layout.addWidget(label_test2)
+        # label_test2 = QLabel(str(video_folder_path))  
+        # label_test2.setStyleSheet("font-size: 15px")
+        # label_test2.setAlignment(Qt.AlignmentFlag.AlignLeft)
+        # label_test2.setWordWrap(True)
+        # layout.addWidget(label_test2)
 
     def return_angles_path(self, angles_file_path: Union[str, Path]) -> Union[str, Path]:
         #self.angles_path = angles_file_path
