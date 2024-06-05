@@ -208,8 +208,8 @@ class PlayPauseCountSlider(QWidget):
                 self._frame_count_label10 = QLabel(f"Lower Right Leg: {self._slider.value()}")
                 new_hbox1.addWidget(self._frame_count_label10)
 
-                self._slider.valueChanged.connect(lambda:self._frame_count_label12.setText(f"\nLeft Wrist: {self.arr12[self._slider.value()]}"))
-                self._frame_count_label12 = QLabel(f"Left Wrist: {self._slider.value()}")
+                self._slider.valueChanged.connect(lambda:self._frame_count_label12.setText(f"\nRight Wrist: {self.arr12[self._slider.value()]}"))
+                self._frame_count_label12 = QLabel(f"Right Wrist: {self._slider.value()}")
                 new_hbox1.addWidget(self._frame_count_label12)
 
                 new_hbox_reba = QHBoxLayout()
