@@ -30,7 +30,7 @@ class PlayPauseCountSlider(QWidget):
     def __init__(self):
         super().__init__()
 
-        self.config_check_path = "C:\\Users\\Arya\\config_check.ini"
+        self.config_check_path = "config_check.ini"
         self.dataTF = self.read_config()
         # Define a global variable to hold the file path
         self.file_path = None
@@ -89,32 +89,76 @@ class PlayPauseCountSlider(QWidget):
         # label_test2.setWordWrap(True)
         # layout.addWidget(label_test2)
         #---------------------------------
-        
-        layout_h = QHBoxLayout()
-        self._layout.addLayout(layout_h)
-        layout_h.setAlignment(Qt.AlignmentFlag.AlignTop)
 
         # Set the layout
         layout2 = QVBoxLayout()
         self._layout.addLayout(layout2)
-        layout2.setAlignment(Qt.AlignmentFlag.AlignBottom)
+        layout2.setAlignment(Qt.AlignmentFlag.AlignLeft)
         
+        layout_h = QHBoxLayout()
+        self._layout.addLayout(layout_h)
+        layout_h.setAlignment(Qt.AlignmentFlag.AlignTop)
+        
+        # Set the main vertical layout
+        layout2 = QVBoxLayout()
+        self._layout.addLayout(layout2)
+        layout2.setAlignment(Qt.AlignmentFlag.AlignLeft)
+
+        # Create additional horizontal layout
+        layout_h = QHBoxLayout()
+        self._layout.addLayout(layout_h)
+        layout_h.setAlignment(Qt.AlignmentFlag.AlignTop)
+
+        # Create a QHBoxLayout to hold both labels
+        h_layout1 = QHBoxLayout()
+        h_layout1.setAlignment(Qt.AlignmentFlag.AlignLeft)
+
+        # Create another QHBoxLayout for other elements
+        h_layout2 = QHBoxLayout()
+        h_layout2.setAlignment(Qt.AlignmentFlag.AlignLeft)
+
+        # Create another QHBoxLayout for other elements
+        h_layout3 = QHBoxLayout()
+        h_layout3.setAlignment(Qt.AlignmentFlag.AlignLeft)
+
+        # Initialize QLabel for the first step
+        self.label = QLabel("# 1st step: Enter current session 'angles.csv' file path", self)
+        self.label.setStyleSheet("font-weight: bold")
+
+        # Initialize QLabel for additional information
+        self.label2 = QLabel("Usually located in 'C:\\Users\\%USER%\\freemocap_data\\recording_sessions\\%SESSION%\\output_data\\angles.csv'", self)
+        self.label2.setStyleSheet("font-size: 13px")
+
+        # Initialize QLabel for the second step
+        self.label3 = QLabel("\t# 2nd step: Slide the slider to choose your condition/frame", self)
+        self.label3.setStyleSheet("font-weight: bold")
+
+        # Initialize QLabel for the third step
+        self.label4 = QLabel("# 3rd step: Check/uncheck the correct conditions", self)
+        self.label4.setStyleSheet("font-weight: bold")
+
+        # Initialize QLabel for the 4th step
+        self.label5 = QLabel("\t# 4th step: Press submit and reload the GUI (controller->reboot gui)", self)
+        self.label5.setStyleSheet("font-weight: bold")
+
+        # Initialize QLabel for the 5th step
+        self.label6 = QLabel("\t# 5th step: REBA score is updated", self)
+        self.label6.setStyleSheet("font-weight: bold")
+
+        # Add both self.label and self.label3 to the same h_layout1
+        h_layout1.addWidget(self.label)
+        h_layout1.addWidget(self.label3)
+
+        # Add self.label2 to another horizontal layout
+        h_layout2.addWidget(self.label2)
+
+        # Add the horizontal layouts to the main vertical layout
+        layout2.addLayout(h_layout1)
+        # layout2.addLayout(h_layout2)
+
         # Create a QLineEdit widget for text input (file path)
         self.textbox = QLineEdit(self)
         layout2.addWidget(self.textbox)
-        
-        # Create a QLabel to display the result
-        h_layout1 = QHBoxLayout()
-        h_layout1.setAlignment(Qt.AlignmentFlag.AlignLeft)
-        h_layout2 = QHBoxLayout()
-        h_layout2.setAlignment(Qt.AlignmentFlag.AlignLeft)
-        
-        self.label = QLabel("Enter angles.csv file path and press Submit", self)
-        self.label2 = QLabel("Usually located in 'C:\\Users\\%USER%\\freemocap_data\\recording_sessions\\%SESSION%\\output_data\\angles.csv'", self)
-        #self.label2 = QLabel(str(self.load_angles_path()), self)
-        self.label2.setStyleSheet("font-size: 13px")
-        h_layout1.addWidget(self.label)
-        h_layout2.addWidget(self.label2)
         
         # Create a QSliderButton (custom QPushButton) for submission
         # h_layout2 = QHBoxLayout()
@@ -122,8 +166,12 @@ class PlayPauseCountSlider(QWidget):
         self.button2.clicked.connect(self.on_click)
         h_layout2.addWidget(self.button2)
 
-        layout2.addLayout(h_layout1)
         layout2.addLayout(h_layout2)
+
+        h_layout3.addWidget(self.label4)
+        h_layout3.addWidget(self.label5)
+        h_layout3.addWidget(self.label6)
+        layout2.addLayout(h_layout3)
 
         # Set the layout to the QWidget
         self.setLayout(layout2)
@@ -131,7 +179,6 @@ class PlayPauseCountSlider(QWidget):
         
         # Load the saved text box value
         self.load_textbox_value()
-
 
         # addition starts
         if self.textbox is not None:
@@ -160,64 +207,69 @@ class PlayPauseCountSlider(QWidget):
                 # angles display addition start
                 new_hbox = QHBoxLayout()
                 self._layout.addLayout(new_hbox)
+                new_hbox.setSpacing(5)  # Set space between widgets in new_hbox
+                new_hbox.setContentsMargins(2, 2, 2, 2)  # Set margins around the new_hbox
 
-                self._slider.valueChanged.connect(lambda:self._frame_count_label1.setText(f"\nHead: {self.arr1[self._slider.value()]}"))
+                self._slider.valueChanged.connect(lambda:self._frame_count_label1.setText(f"Head: {self.arr1[self._slider.value()]}\u00B0"))
                 self._frame_count_label1 = QLabel(f"Head: {self._slider.value()}")
                 new_hbox.addWidget(self._frame_count_label1)
 
-                self._slider.valueChanged.connect(lambda:self._frame_count_label3.setText(f"\nUpper Left Arm: {self.arr3[self._slider.value()]}"))
+                self._slider.valueChanged.connect(lambda:self._frame_count_label3.setText(f"Upper Left Arm: {self.arr3[self._slider.value()]}\u00B0"))
                 self._frame_count_label3 = QLabel(f"Upper Left Arm: {self._slider.value()}")
                 new_hbox.addWidget(self._frame_count_label3)
 
-                self._slider.valueChanged.connect(lambda:self._frame_count_label4.setText(f"\nUpper Right Arm: {self.arr4[self._slider.value()]}"))
+                self._slider.valueChanged.connect(lambda:self._frame_count_label4.setText(f"Upper Right Arm: {self.arr4[self._slider.value()]}\u00B0"))
                 self._frame_count_label4 = QLabel(f"Upper Right Arm: {self._slider.value()}")
                 new_hbox.addWidget(self._frame_count_label4)
 
-                self._slider.valueChanged.connect(lambda:self._frame_count_label5.setText(f"\nUpper Left Leg: {self.arr5[self._slider.value()]}"))
+                self._slider.valueChanged.connect(lambda:self._frame_count_label5.setText(f"Upper Left Leg: {self.arr5[self._slider.value()]}\u00B0"))
                 self._frame_count_label5 = QLabel(f"Upper Left Leg: {self._slider.value()}")
                 new_hbox.addWidget(self._frame_count_label5)
 
-                self._slider.valueChanged.connect(lambda:self._frame_count_label6.setText(f"\nUpper Right Leg: {self.arr6[self._slider.value()]}"))
+                self._slider.valueChanged.connect(lambda:self._frame_count_label6.setText(f"Upper Right Leg: {self.arr6[self._slider.value()]}\u00B0"))
                 self._frame_count_label6 = QLabel(f"Upper Right Leg: {self._slider.value()}")
                 new_hbox.addWidget(self._frame_count_label6)
 
-                self._slider.valueChanged.connect(lambda:self._frame_count_label11.setText(f"\nLeft Wrist: {self.arr11[self._slider.value()]}"))
+                self._slider.valueChanged.connect(lambda:self._frame_count_label11.setText(f"Left Wrist: {self.arr11[self._slider.value()]}\u00B0"))
                 self._frame_count_label11 = QLabel(f"Left Wrist: {self._slider.value()}")
                 new_hbox.addWidget(self._frame_count_label11)
 
                 new_hbox1 = QHBoxLayout()
                 self._layout.addLayout(new_hbox1)
+                new_hbox1.setSpacing(5)  # Set space between widgets in new_hbox
+                new_hbox1.setContentsMargins(2, 2, 2, 2)  # Set margins around the new_hbox
 
-                self._slider.valueChanged.connect(lambda:self._frame_count_label2.setText(f"\nTrunk: {self.arr2[self._slider.value()]}"))
+                self._slider.valueChanged.connect(lambda:self._frame_count_label2.setText(f"Trunk: {self.arr2[self._slider.value()]}\u00B0"))
                 self._frame_count_label2 = QLabel(f"Trunk: {self._slider.value()}")
                 new_hbox1.addWidget(self._frame_count_label2)
 
-                self._slider.valueChanged.connect(lambda:self._frame_count_label7.setText(f"\nLower Left Arm: {self.arr7[self._slider.value()]}"))
+                self._slider.valueChanged.connect(lambda:self._frame_count_label7.setText(f"Lower Left Arm: {self.arr7[self._slider.value()]}\u00B0"))
                 self._frame_count_label7 = QLabel(f"Lower Left Arm: {self._slider.value()}")
                 new_hbox1.addWidget(self._frame_count_label7)
 
-                self._slider.valueChanged.connect(lambda:self._frame_count_label8.setText(f"\nLower Right Arm: {self.arr8[self._slider.value()]}"))
+                self._slider.valueChanged.connect(lambda:self._frame_count_label8.setText(f"Lower Right Arm: {self.arr8[self._slider.value()]}\u00B0"))
                 self._frame_count_label8 = QLabel(f"Lower Right Arm: {self._slider.value()}")
                 new_hbox1.addWidget(self._frame_count_label8)
 
-                self._slider.valueChanged.connect(lambda:self._frame_count_label9.setText(f"\nLower Left Leg: {self.arr9[self._slider.value()]}"))
+                self._slider.valueChanged.connect(lambda:self._frame_count_label9.setText(f"Lower Left Leg: {self.arr9[self._slider.value()]}\u00B0"))
                 self._frame_count_label9 = QLabel(f"Lower Left Leg: {self._slider.value()}")
                 new_hbox1.addWidget(self._frame_count_label9)
 
-                self._slider.valueChanged.connect(lambda:self._frame_count_label10.setText(f"\nLower Right Leg: {self.arr10[self._slider.value()]}"))
+                self._slider.valueChanged.connect(lambda:self._frame_count_label10.setText(f"Lower Right Leg: {self.arr10[self._slider.value()]}\u00B0"))
                 self._frame_count_label10 = QLabel(f"Lower Right Leg: {self._slider.value()}")
                 new_hbox1.addWidget(self._frame_count_label10)
 
-                self._slider.valueChanged.connect(lambda:self._frame_count_label12.setText(f"\nRight Wrist: {self.arr12[self._slider.value()]}"))
+                self._slider.valueChanged.connect(lambda:self._frame_count_label12.setText(f"Right Wrist: {self.arr12[self._slider.value()]}\u00B0"))
                 self._frame_count_label12 = QLabel(f"Right Wrist: {self._slider.value()}")
                 new_hbox1.addWidget(self._frame_count_label12)
 
-                new_hbox_reba = QHBoxLayout()
-                self._layout.addLayout(new_hbox_reba)
+                self.new_hbox_reba = QHBoxLayout()
+                self._layout.addLayout(self.new_hbox_reba)
 
                 self._slider.valueChanged.connect(lambda:self._frame_count_label13.setText(f"\nREBA Score: {self.arr13[self._slider.value()]}"))
                 self._frame_count_label13 = QLabel(f"REBA Score: {self._slider.value()}")
-                new_hbox_reba.addWidget(self._frame_count_label13)
+                self._frame_count_label13.setStyleSheet("font-weight:bold")
+                self.new_hbox_reba.addWidget(self._frame_count_label13)
             else:
                 pass
         #--------------------Condition-----------------------------
@@ -230,7 +282,7 @@ class PlayPauseCountSlider(QWidget):
         self.checkbox_group_weight.setExclusive(True)
 
         # Create a QCheckBox widget
-        self.checkbox0 = QCheckBox('< 5kg', self)
+        self.checkbox0 = QCheckBox('0 or < 5kg', self)
         self.checkbox_group_weight.addButton(self.checkbox0, 1)
         self.checkbox0.stateChanged.connect(self.save_value)
         #self.checkbox0.stateChanged.connect(self.checkbox0)
@@ -447,9 +499,9 @@ class PlayPauseCountSlider(QWidget):
     
     def on_click(self):
         file_path = self.textbox.text()
-        if os.path.exists(file_path):
+        if os.path.exists(file_path) and file_path.endswith('.csv'):
             self.file_path = file_path
-            message = f'File exists: {self.file_path}'
+            message = f'File exists: {self.file_path}->Processing...'
             self.save_textbox_value(self.file_path)
 
             self.angles_dict = self.csv_to_dict(self.file_path)
@@ -474,14 +526,16 @@ class PlayPauseCountSlider(QWidget):
             # print("Final Angles Dict:", self.angles_dict)
             # print("REBA Array Length:", len(self.reba_arr))
             # print("Column Length:", self.col_len)
+        elif not file_path.endswith('.csv'):
+            message = f'File is not a .csv file!'
         else:
-            message = f'File does not exist: {file_path}'
+            message = f'File does not exist!: {file_path}'
         
         # Update the label to display the result
-        self.label.setText(message)
+        self.label2.setText(message)
         
         # Print the result to the console (optional)
-        print(message)
+        #print(message)
 
         # Print the checkbox state
         # print(f"Checkbox is {'checked' if self.checkbox.checkState() == Qt.CheckState.Checked else 'unchecked'}")
@@ -500,6 +554,8 @@ class PlayPauseCountSlider(QWidget):
             config.read('config.ini')
             file_path = config['DEFAULT'].get('file_path', '')
             self.textbox.setText(file_path)
+        else:
+            pass
 
     def load_angles_path(self):
         # Load the text box value from the configuration file
@@ -772,7 +828,7 @@ class PlayPauseCountSlider(QWidget):
                         angles_dict['neck'][i], False, False, 
                         angles_dict['trunk'][i], False, False, 
                         angles_dict['lower_right_leg'][i], angles_dict['lower_left_leg'][i],
-                        False,
+                        0,
                         angles_dict['upper_right_arm'][i], angles_dict['upper_left_arm'][i], False, False, False,
                         angles_dict['lower_right_arm'][i], angles_dict['lower_left_arm'][i],
                         angles_dict['left_wrist'][i], angles_dict['right_wrist'][i], False,
